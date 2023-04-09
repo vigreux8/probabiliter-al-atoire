@@ -167,6 +167,8 @@ class CalculeProbabiliter(TypeProbabiliter):
             with self.s.colonne_centralle:
                 st.write(f"-le model choisi: {self.model_selectionnner}")
                 st.write(f"-il y : {self.resultat} possibilité.")
+                if self.distingable =="p":
+                    st.write(f"-la taille du groupe et de :{sum(self.list_n_permutation_partiel)}")
    
     def print_explain_why(self):
         if ConstParamatreApplication.EXPLAIN_WHY:
