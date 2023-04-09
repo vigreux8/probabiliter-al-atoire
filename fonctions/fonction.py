@@ -24,52 +24,52 @@ class TypeProbabiliter(CalculculeMathematique):
         self.resultat = None
         self.list_n_permutation_partiel = []
     
-    def get_resultat(self,valeur):
+    def set_resultat(self,valeur):
         self.resultat = valeur
 
     def p_liste(self):
         self.model_selectionnner = "le model chois est P_liste"
-        self.get_resultat(self.cardinale_n**self.nb_tirage_p) 
+        self.set_resultat(self.cardinale_n**self.nb_tirage_p) 
 
     def arrangement(self):
         self.model_selectionnner = "le model chois est arrangement"
         dividende = self.factoriels(self.cardinale_n)
         diviseur =  self.factoriels(self.cardinale_n-self.nb_tirage_p)
-        self.get_resultat(dividende/diviseur) 
+        self.set_resultat(dividende/diviseur) 
     
     def combinaison(self):
         self.model_selectionnner = "le model chois est combinaison"
         dividende = self.factoriels(self.cardinale_n)
         diviseur = self.factoriels(self.nb_tirage_p)*self.factoriels(self.cardinale_n-self.nb_tirage_p)
-        self.get_resultat(dividende/diviseur)
+        self.set_resultat(dividende/diviseur)
     
     def p_suite(self):
         self.model_selectionnner = "le model chois est p_suite"
         dividende =  self.factoriels(self.cardinale_n+self.nb_tirage_p-1)
         diviseur = self.factoriels(self.nb_tirage_p)*self.factoriels(self.cardinale_n-1)
-        self.get_resultat(dividende/diviseur)
+        self.set_resultat(dividende/diviseur)
     
     def permutation_total(self):
         self.model_selectionnner = "le model chois est permutation total"
-        print(self.factoriels(self.cardinale_n))
-        self.get_resultat(self.factoriels(self.cardinale_n))
-        
-        
+        self.set_resultat(self.factoriels(self.cardinale_n))
+           
     def permutation_partiel(self):
         self.model_selectionnner = "le model chois est permutation partiel"
         dividende = self.factoriels(self.cardinale_n)
         diviseur = 1
         for i in self.list_n_permutation_partiel:
             diviseur *= self.factoriels(i)
-        self.get_resultat= dividende/diviseur
-        
-    
-   
+            print(diviseur)
+        print(dividende/diviseur)
+        self.set_resultat(round(dividende/diviseur))
+     
 class Calcule_probabiliter(TypeProbabiliter):
     def __init__(self) -> None:
+        super().__init__()
         self.remise =None
         #distingable prend False = non, 1 = partiellement,2 = distingable
         self.distingable = False
+        self.distingable_mot_complet = None
         self.ordre = None
         self.model_selectionnner = None
    
@@ -78,13 +78,16 @@ class Calcule_probabiliter(TypeProbabiliter):
     def init_get_user_info(self):
         self.distingable =  self.conv_string_true_or_false("o","n","se sont des object distincable O/N : ?") 
         if self.distingable:
-            self.distingable =  self.conv_string_true_or_false("t","p","totalement/partiellement ? T/P : ","T","P")
-            if self.distingable.lower() == "p":
+            self.distingable =  self.conv_string_true_or_false("t","p","la Totaliter/artiellement ? T/P : ","T","P") 
+            if self.distingable == "p":
+                self.distingable_mot_complet = "partielement"
                 nb_n_distingable = int(input("combiens d'élément distingable ? "))
                 for i in range(0,nb_n_distingable):
-                    self.list_n_permutation_partiel.append(int(input("valeur de n",i)))
-        elif self.distingable.lower() =="t":
-            pass     
+                    self.list_n_permutation_partiel.append(int(input(f"valeur de n{i+1}: ")))
+                self.cardinale_n = sum(self.list_n_permutation_partiel)
+            else :
+                self.distingable_mot_complet = "totalement"
+                self.cardinale_n = int(input("combiens d'élement au totals ? "))   
         else:
             self.remise =  self.conv_string_true_or_false("o","n",("Avec remise o/n : "))
             self.ordre =  self.conv_string_true_or_false("o","n",("Avec ordre o/n : "))
@@ -111,9 +114,15 @@ class Calcule_probabiliter(TypeProbabiliter):
         input_value =  input(input_value)
         input_value = input_value.lower()
         if input_value == Choix_1:
-            return Return_1
+            if Return_1 ==True:
+                return Return_1
+            else:
+                return Return_1.lower()
         elif input_value == choix_2:
-            return Return_2
+            if  Return_2 == False:
+                return Return_2
+            else:
+                return Return_2.lower()           
     
     def condition_pour_choisir_liste(self):
         #p-liste  remise:True | ordre:True 
@@ -122,16 +131,16 @@ class Calcule_probabiliter(TypeProbabiliter):
         #p-suite : remise:True | ordre:False 
         #permutation distinct : remise: None | ordre:True | distincable : True
         #permutation partiels : remise: None | ordre: None | distincable : False
-        if self.remise and self.ordre:
+        if self.remise and self.ordre and self.distingable ==False:
             self.p_liste()
             
-        elif  self.remise ==False and self.ordre and self.distingable ==None:
+        elif  self.remise ==False and self.ordre and self.distingable ==False:
             self.arrangement()
             
-        elif not self.remise and not self.ordre and self.distingable ==None:
+        elif not self.remise and not self.ordre and self.distingable ==False:
             self.combinaison()
     
-        elif self.remise and not self.ordre and self.distingable ==None:
+        elif self.remise and not self.ordre and self.distingable ==False:
             self.p_suite()
             
         elif self.distingable == "t":
@@ -139,19 +148,41 @@ class Calcule_probabiliter(TypeProbabiliter):
             
         elif self.distingable == "p":
             self.permutation_partiel()
-    
-    
-    
-       
+
     def print_resultat(self):
         print("-le model choisi:",self.model_selectionnner,"\n-il y :",self.resultat,"possibilité.")
   
+    def print_explain_why(self):
+        if ConstParamatreApplication.EXPLAIN_WHY:
+            if self.distingable :
+                print(f"_____pourquoi se choix ?______ \n les element sont distingable {self.distingable_mot_complet} les formule comprenne que la cardinaliter")
+            else:
+                remise=  self.converte_True_False_to_str(self.remise,"oui","non")
+                ordre = self.converte_True_False_to_str(self.ordre,"oui","non")
+                
+                print(f"_____pourquoi se choix ?_____ \n-les element ne sont pas ditingable la remise et importante \n-remise = {remise} \n-l'ordre = {ordre}")
+        
+    def Print_explain_what_model(self):
+        if ConstParamatreApplication.EXPLAIN_WHAT_MODEL:
+            print("_____pourquoi se model a était choisi :____")
+            print(self.model_selectionnner ) 
+  
+    @staticmethod
+    def converte_True_False_to_str(variable,message_si_vrais,message_si_faut,si_vrais=True,_si_faut=False):
+        if variable == si_vrais:
+            return message_si_vrais
+            
+        if variable == _si_faut:
+            return message_si_faut
+    
     def run_programme(self):
         if  ConstParamatreApplication.DEBUG:
             self.init_test()
         else : 
             self.init_get_user_info()
-            
         self.condition_pour_choisir_liste()
+        self.Print_explain_what_model()
+        print()
+        self.print_explain_why()
         self.print_resultat()
     
