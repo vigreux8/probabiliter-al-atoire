@@ -75,8 +75,8 @@ class CalculeProbabiliter(TypeProbabiliter):
         self.ordre = None
         self.model_selectionnner = None
         self.s = VariableObjetStreamlit()
-        
-    
+ 
+          
     def init_get_user_info(self):
         self.distingable =  self.conv_string_true_or_false("o","n","se sont des object distincable O/N : ?") 
         if self.distingable:
@@ -168,7 +168,7 @@ class CalculeProbabiliter(TypeProbabiliter):
                 st.write(f"-le model choisi: {self.model_selectionnner}")
                 st.write(f"-il y : {self.resultat} possibilité.")
                 if self.distingable =="p":
-                    st.write(f"-la taille du groupe et de :{sum(self.list_n_permutation_partiel)}")
+                    st.write(f"-la taille du groupe et de : {sum(self.list_n_permutation_partiel)}")
    
     def print_explain_why(self):
         if ConstParamatreApplication.EXPLAIN_WHY:
@@ -187,9 +187,7 @@ class CalculeProbabiliter(TypeProbabiliter):
                 print(self.model_selectionnner ) 
             elif ConstParamatreApplication.INTERFACE == ConstParamatreApplication.WEB:
                 with self.s.colonne_centralle:
-                    st.write(self.model_selectionnner)
-                    
-            
+                    st.write(self.model_selectionnner)     
     
     def run_programme(self):
         if  ConstParamatreApplication.DEBUG:
@@ -211,18 +209,23 @@ class CalculeProbabiliter(TypeProbabiliter):
                 self.s.Select_box_distingable_type = st.selectbox("les objet sont distingable :",(f"{self.s.PARTILEMENT}",f"{self.s.TOTALEMENT}"))
                 if self.s.Select_box_distingable_type == self.s.PARTILEMENT:
                     self.distingable ="p"
-                    nb_n_distingable = st.number_input("Nombre de groupe :",step=1)
+                    nb_n_distingable = st.number_input("Nombre de groupe :",step=1,min_value=2)
                     for i in range(0,nb_n_distingable):
                         self.list_n_permutation_partiel.append(st.number_input(f"nombre d'objet du groupe n{i+1}: ",step=1))
                     self.cardinale_n = sum(self.list_n_permutation_partiel)
                 elif self.s.Select_box_distingable_type == self.s.TOTALEMENT:
                     self.distingable ="t"
-                    self.cardinale_n =st.number_input("Nombre d'objet au total :",step=1)
+                    self.cardinale_n =st.number_input("Nombre d'objet au total :",step=1,min_value=1)
                 
             elif self.s.selecte_option_choice =="Ordre et nombre de tirage":
                 self.remise = st.checkbox("Remise")
                 self.ordre= st.checkbox("ordre")
-                self.cardinale_n = st.number_input("Nombre d'élement dana la liste (cardinale_n) :",step=1)
-                self.nb_tirage_p = st.number_input("Nombre de tirage :",step=1)
-        
+                self.cardinale_n = st.number_input("Nombre d'élement dans la liste (cardinale_n) :",step=1,min_value=1)
+                if not self.remise :
+                    self.nb_tirage_p = st.number_input("Nombre de tirage :",step=1,min_value=1,max_value=self.cardinale_n)
+                    with self.s.colonne_centralle:
+                        st.write("<p style='color: red; font-weight: bold;'>nombre d'élement ne peut être supérieur au tirage !</p>", unsafe_allow_html=True)
+                else:
+                    self.nb_tirage_p = st.number_input("Nombre de tirage :",step=1,min_value=1)
+                    
 
