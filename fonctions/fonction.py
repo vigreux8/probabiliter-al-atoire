@@ -2,6 +2,7 @@ import math
 from setting.setting import ConstParamatreApplication,VariableObjetStreamlit
 import streamlit as st
 import re
+from numpy import random
 
 #demander si le paramétre et distinc partiellement disting si oui allez passer la demande si répétition et nombre de répétitions
 # class DebugTest:
@@ -75,6 +76,7 @@ class CalculeProbabiliter(TypeProbabiliter):
         self.ordre = None
         self.model_selectionnner = None
         self.s = VariableObjetStreamlit()
+        self.reponse_utilisateur = None
  
           
     def init_get_user_info(self):
@@ -97,23 +99,23 @@ class CalculeProbabiliter(TypeProbabiliter):
             self.nb_tirage_p = int(input("saisir nb_tirage(p): "))
     
     @staticmethod
-    def converte_True_False_to_str(variable,message_si_vrais,message_si_faut,si_vrais=True,_si_faut=False):
+    def converte_True_False_to_str(variable,message_si_vrais,message_si_faut,si_vrais=True,si_faut=False):
         if variable == si_vrais:
             return message_si_vrais
             
-        if variable == _si_faut:
+        if variable == si_faut:
             return message_si_faut
 
     @staticmethod
-    def conv_string_true_or_false(Choix_1: str,choix_2: str,input_value: str,Return_1=True,Return_2=False):
+    def conv_string_true_or_false(condition_1: str,condition_2: str,input_value: str,Return_1=True,Return_2=False):
         input_value =  input(input_value)
         input_value = input_value.lower()
-        if input_value == Choix_1:
+        if input_value == condition_1:
             if Return_1 ==True:
                 return Return_1
             else:
                 return Return_1.lower()
-        elif input_value == choix_2:
+        elif input_value == condition_2:
             if  Return_2 == False:
                 return Return_2
             else:
@@ -135,7 +137,7 @@ class CalculeProbabiliter(TypeProbabiliter):
             self.cardinale_n = 9
               
 
-    def condition_pour_choisir_liste(self):
+    def get_resultat_et_choisis_liste(self):
         #p-liste  remise:True | ordre:True 
         #arrangement remise:False | ordre:True 
         #combinaison remise:False | ordre:False 
@@ -198,17 +200,49 @@ class CalculeProbabiliter(TypeProbabiliter):
         elif ConstParamatreApplication.INTERFACE == ConstParamatreApplication.TERMINAL: 
             self.init_get_user_info()
         elif ConstParamatreApplication.INTERFACE == ConstParamatreApplication.WEB:
-            self.use_streamlit()
-        self.condition_pour_choisir_liste()
-        self.Print_explain_what_model()
-        # print()
-        self.print_explain_why()
-        self.print_resultat()
-
-    def use_streamlit(self):
+            self.streamlit_choice_who_app_use()
+        if not self.s.selecte_option_choice == ConstParamatreApplication.OPTION_CHOISI[2]:
+            self.get_resultat_et_choisis_liste()
+            self.Print_explain_what_model()
+            self.print_explain_why()
+            self.print_resultat()
+        else:
+            self.selection_aléatoire()
+            self.get_resultat_et_choisis_liste()
+            self.streamlit_affichage_detaile()
+            self.print_resultat()
+            
+            
+            
+            
+            
+    def streamlit_choice_who_app_use(self):
         with self.s.colonne_gauche:
-            self.s.selecte_option_choice = st.selectbox("Options a choisir",("distincable","Ordre et nombre de tirage",))
-            if self.s.selecte_option_choice =="distincable":
+            self.s.selecte_option_choice = st.selectbox("Options a choisir",ConstParamatreApplication.OPTION_CHOISI)
+            if self.s.selecte_option_choice ==ConstParamatreApplication.OPTION_CHOISI[0]:
+                self.streamlit_app_distingable()
+            elif self.s.selecte_option_choice ==ConstParamatreApplication.OPTION_CHOISI[1]:
+                self.streamlit_app_ordre_and_tirage()
+            elif self.s.selecte_option_choice ==ConstParamatreApplication.OPTION_CHOISI[2]:
+                self.Streamlit_app_entrainement()
+                 
+    def streamlit_affichage_detaile(self):
+        with self.s.colonne_gauche:
+            st.write(f"remise : {self.converte_True_False_to_str(self.remise,'oui','non')}")
+            st.write(f"ordre : {self.converte_True_False_to_str(self.ordre,'oui','non')}")
+            st.write(f"distingable : {self.converte_True_False_to_str(self.distingable, si_vrais='t',si_faut='p',message_si_vrais= 'totalement',message_si_faut='partiellement')}")
+            st.write(f"nombre d'élément partiel : {len(self.list_n_permutation_partiel)}")
+            st.write(f"nombre de tirage :{self.nb_tirage_p}")
+            st.write(f"taille de la liste : {self.cardinale_n}")
+            st.write(f"nombre de personne par groupe : {self.list_n_permutation_partiel}")
+            
+
+            
+            
+            
+                    
+    def streamlit_app_distingable(self):
+        with self.s.colonne_gauche:
                 self.s.Select_box_distingable_type = st.selectbox("les objet sont distingable :",(f"{self.s.PARTILEMENT}",f"{self.s.TOTALEMENT}"))
                 if self.s.Select_box_distingable_type == self.s.PARTILEMENT:
                     self.distingable ="p"
@@ -219,14 +253,65 @@ class CalculeProbabiliter(TypeProbabiliter):
                 elif self.s.Select_box_distingable_type == self.s.TOTALEMENT:
                     self.distingable ="t"
                     self.cardinale_n =st.number_input("Nombre d'objet au total :",step=1,min_value=1)
+    def streamlit_app_ordre_and_tirage(self):
+        with self.s.colonne_gauche:
+            self.remise = st.checkbox("Remise")
+            self.ordre= st.checkbox("ordre")
+            self.cardinale_n = st.number_input("Nombre d'élement dans la liste (cardinale_n) :",step=1,min_value=1)
+            if not self.remise :
+                self.nb_tirage_p = st.number_input("Nombre de tirage :",step=1,min_value=1,max_value=self.cardinale_n)
+            else:
+                self.nb_tirage_p = st.number_input("Nombre de tirage :",step=1,min_value=1)
+    
+    def Streamlit_app_entrainement(self):
+        """
+        Detaille du jeux 
+        selectionne des valeurs aléatoires 
+            -remise  true / false
+            -ordre   true / false
+            -distingable
+                -partiel
+                -Total
+            me donne les parametre 
+            demande la réponse 
+            compare la réponse
+        """
+        with self.s.colonne_centralle:
+            st.write("Calculer le résultat :")
+            
+        with self.s.colonne_gauche:
+            pass
+        
+    def selection_aléatoire(self):
+        """
+        si la premier condition et respect on part sur :
+            -distingable
+        sinon :
+            -ordre et remise
+        """
+        if self.random_1_ou_2():
+            self.remise = self.random_1_ou_2()
+            self.ordre = self.random_1_ou_2()
+            print(self.remise)
+            if not self.remise:
+                self.cardinale_n = random.randint(1,ConstParamatreApplication.HASART_MAXIMUM)
+                self.nb_tirage_p = random.randint(1,self.cardinale_n)
+            else:
+                self.cardinale_n = random.randint(1,ConstParamatreApplication.HASART_MAXIMUM)
+                self.nb_tirage_p = random.randint(1,ConstParamatreApplication.HASART_MAXIMUM)
                 
-            elif self.s.selecte_option_choice =="Ordre et nombre de tirage":
-                self.remise = st.checkbox("Remise")
-                self.ordre= st.checkbox("ordre")
-                self.cardinale_n = st.number_input("Nombre d'élement dans la liste (cardinale_n) :",step=1,min_value=1)
-                if not self.remise :
-                    self.nb_tirage_p = st.number_input("Nombre de tirage :",step=1,min_value=1,max_value=self.cardinale_n)
-                else:
-                    self.nb_tirage_p = st.number_input("Nombre de tirage :",step=1,min_value=1)
-                    
+        else:
+            self.distingable = self.random_1_ou_2("t","p")
+            if self.distingable =="t":
+                self.cardinale_n = random.randint(1,ConstParamatreApplication.HASART_MAXIMUM)
+            elif self.distingable =="p":
+                self.cardinale_n = random.randint(1,ConstParamatreApplication.HASART_MAXIMUM)
+                for i in range(1,random.randint(1,5)):
+                    self.list_n_permutation_partiel.append(random.randint(1,5))
 
+    @staticmethod
+    def random_1_ou_2(si_vraie=True,si_faut=False):
+        if random.randint(0,2) == 0:
+            return si_vraie
+        else:
+            return si_faut
