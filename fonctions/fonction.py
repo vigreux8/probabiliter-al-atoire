@@ -1,7 +1,7 @@
 import math
 from setting.setting import ConstParamatreApplication,VariableObjetStreamlit
 import streamlit as st
-
+import re
 
 #demander si le paramétre et distinc partiellement disting si oui allez passer la demande si répétition et nombre de répétitions
 # class DebugTest:
@@ -30,33 +30,33 @@ class TypeProbabiliter(CalculculeMathematique):
         self.resultat = valeur
 
     def p_liste(self):
-        self.model_selectionnner = "le model chois est P_liste"
+        self.model_selectionnner = "P_liste"
         self.set_resultat(self.cardinale_n**self.nb_tirage_p) 
 
     def arrangement(self):
-        self.model_selectionnner = "le model chois est arrangement"
+        self.model_selectionnner = "arrangement"
         dividende = self.factoriels(self.cardinale_n)
         diviseur =  self.factoriels(self.cardinale_n-self.nb_tirage_p)
         self.set_resultat(dividende/diviseur) 
     
     def combinaison(self):
-        self.model_selectionnner = "le model chois est combinaison"
+        self.model_selectionnner = "combinaison"
         dividende = self.factoriels(self.cardinale_n)
         diviseur = self.factoriels(self.nb_tirage_p)*self.factoriels(self.cardinale_n-self.nb_tirage_p)
         self.set_resultat(dividende/diviseur)
     
     def p_suite(self):
-        self.model_selectionnner = "le model chois est p_suite"
+        self.model_selectionnner = "P_suite"
         dividende =  self.factoriels(self.cardinale_n+self.nb_tirage_p-1)
         diviseur = self.factoriels(self.nb_tirage_p)*self.factoriels(self.cardinale_n-1)
         self.set_resultat(dividende/diviseur)
     
     def permutation_total(self):
-        self.model_selectionnner = "le model chois est permutation total"
+        self.model_selectionnner = "permutation total"
         self.set_resultat(self.factoriels(self.cardinale_n))
            
     def permutation_partiel(self):
-        self.model_selectionnner = "le model chois est permutation partiel"
+        self.model_selectionnner = "permutation partiel"
         dividende = self.factoriels(self.cardinale_n)
         diviseur = 1
         for i in self.list_n_permutation_partiel:
@@ -165,11 +165,15 @@ class CalculeProbabiliter(TypeProbabiliter):
             print("-le model choisi:",self.model_selectionnner,"\n-il y :",self.resultat,"possibilité.")
         elif ConstParamatreApplication.INTERFACE == ConstParamatreApplication.WEB:
             with self.s.colonne_centralle:
-                st.write(f"-le model choisi: {self.model_selectionnner}")
+                if not self.remise and not self.distingable :
+                    st.write("<p style='color: red; font-weight: bold;'>nombre d'élement ne peut être supérieur au tirage !</p>", unsafe_allow_html=True)
+                texte = f"-le model choisi: {self.model_selectionnner}"
+                texte_html = re.sub(f'({self.model_selectionnner})', r'<span style="background-color: blue;">\1</span>', texte)
+                st.write(texte_html, unsafe_allow_html=True)
                 st.write(f"-il y : {self.resultat} possibilité.")
                 if self.distingable =="p":
                     st.write(f"-la taille du groupe et de : {sum(self.list_n_permutation_partiel)}")
-   
+                    
     def print_explain_why(self):
         if ConstParamatreApplication.EXPLAIN_WHY:
             if self.distingable :
@@ -186,8 +190,7 @@ class CalculeProbabiliter(TypeProbabiliter):
                 print("_____pourquoi se model a était choisi :____")
                 print(self.model_selectionnner ) 
             elif ConstParamatreApplication.INTERFACE == ConstParamatreApplication.WEB:
-                with self.s.colonne_centralle:
-                    st.write(self.model_selectionnner)     
+                pass
     
     def run_programme(self):
         if  ConstParamatreApplication.DEBUG:
@@ -195,14 +198,14 @@ class CalculeProbabiliter(TypeProbabiliter):
         elif ConstParamatreApplication.INTERFACE == ConstParamatreApplication.TERMINAL: 
             self.init_get_user_info()
         elif ConstParamatreApplication.INTERFACE == ConstParamatreApplication.WEB:
-            self.init_streamlit()
+            self.use_streamlit()
         self.condition_pour_choisir_liste()
         self.Print_explain_what_model()
         # print()
         self.print_explain_why()
         self.print_resultat()
 
-    def init_streamlit(self):
+    def use_streamlit(self):
         with self.s.colonne_gauche:
             self.s.selecte_option_choice = st.selectbox("Options a choisir",("distincable","Ordre et nombre de tirage",))
             if self.s.selecte_option_choice =="distincable":
@@ -223,8 +226,6 @@ class CalculeProbabiliter(TypeProbabiliter):
                 self.cardinale_n = st.number_input("Nombre d'élement dans la liste (cardinale_n) :",step=1,min_value=1)
                 if not self.remise :
                     self.nb_tirage_p = st.number_input("Nombre de tirage :",step=1,min_value=1,max_value=self.cardinale_n)
-                    with self.s.colonne_centralle:
-                        st.write("<p style='color: red; font-weight: bold;'>nombre d'élement ne peut être supérieur au tirage !</p>", unsafe_allow_html=True)
                 else:
                     self.nb_tirage_p = st.number_input("Nombre de tirage :",step=1,min_value=1)
                     
