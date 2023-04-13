@@ -1,6 +1,6 @@
-from fonctions.fonction import CalculeProbabiliter
+from fonctions.fonction import run_programme
 
 
 
-calcule_proba = CalculeProbabiliter()
-calcule_proba.run_programme()
+calcule_proba = run_programme()
+calcule_proba.run_streamlit()
