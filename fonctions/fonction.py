@@ -78,8 +78,7 @@ class CalculeProbabiliter(TypeProbabiliter):
         self.s = VariableObjetStreamlit()
         self.reponse_utilisateur = True
         self.bool_reponse = None
- 
-          
+        
     def init_get_user_info(self):
         self.distingable =  self.conv_string_true_or_false("o","n","se sont des object distincable O/N : ?") 
         if self.distingable:
@@ -137,7 +136,7 @@ class CalculeProbabiliter(TypeProbabiliter):
             self.nb_tirage_p = 3
             self.cardinale_n = 9
     
-    def save_resultat(self):
+    def init_variable_globale_streamlite(self):
         if "reponse" not in st.session_state:
             st.session_state.reponse =  int(self.resultat)      
 
@@ -223,7 +222,7 @@ class CalculeProbabiliter(TypeProbabiliter):
         else:
             self.selection_aléatoire()
             self.get_resultat_et_choisis_liste()
-            self.save_resultat()
+            self.init_variable_globale_streamlite()
             self.streamlit_affichage_detaile()
             self.get_reponse_utilisateur()
             
@@ -335,8 +334,6 @@ class CalculeProbabiliter(TypeProbabiliter):
                 for i in range(0,random.randint(1,6)):
                     self.list_n_permutation_partiel.append(random.randint(1,5))
                 self.cardinale_n = sum(self.list_n_permutation_partiel)
-
-
     
     def get_reponse_utilisateur(self):
         with self.s.colonne_centralle:
@@ -366,3 +363,6 @@ class CalculeProbabiliter(TypeProbabiliter):
             return si_vraie
         else:
             return si_faut
+        
+        
+        
