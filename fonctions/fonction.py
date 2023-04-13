@@ -68,10 +68,11 @@ class WhatModelCalculeProbabiliter(TypeProbabiliter):
     #distingable prend False = non, 1 = partiellement,2 = distingable
     def __init__(self) -> None:
         super().__init__()
-        self.remise =None
+        self.bool_remise =None
         self.distingable = False
         self.distingable_mot_complet = None
-        self.ordre = None
+        self.bool_distingable = None
+        self.bool_ordre = None
         self.model_selectionnner = None
         self.reponse_utilisateur = None
         
@@ -105,16 +106,16 @@ class WhatModelCalculeProbabiliter(TypeProbabiliter):
         #p-suite : remise:True | ordre:False 
         #permutation distinct : remise: None | ordre:True | distincable : True
         #permutation partiels : remise: None | ordre: None | distincable : False
-        if self.remise and self.ordre and self.distingable ==False:
+        if self.bool_remise and self.bool_ordre and self.distingable ==False:
             self.p_liste()
             
-        elif  self.remise ==False and self.ordre and self.distingable ==False:
+        elif  self.bool_remise ==False and self.bool_ordre and self.distingable ==False:
             self.arrangement()
             
-        elif not self.remise and not self.ordre and self.distingable ==False:
+        elif not self.bool_remise and not self.bool_ordre and self.distingable ==False:
             self.combinaison()
     
-        elif self.remise and not self.ordre and self.distingable ==False:
+        elif self.bool_remise and not self.bool_ordre and self.distingable ==False:
             self.p_suite()
             
         elif self.distingable == "t":
@@ -131,10 +132,11 @@ class WhatModelCalculeProbabiliter(TypeProbabiliter):
             -ordre et remise
         """
         if self.random_1_ou_2():
-            self.remise = self.random_1_ou_2()
-            self.ordre = self.random_1_ou_2()
-            print(self.remise)
-            if not self.remise:
+            self.bool_distingable = False
+            self.bool_remise = self.random_1_ou_2()
+            self.bool_ordre = self.random_1_ou_2()
+            print(self.bool_remise)
+            if not self.bool_remise:
                 self.cardinale_n = random.randint(1,ConstParamatreApplication.HASART_MAXIMUM)
                 self.nb_tirage_p = random.randint(1,self.cardinale_n+1)
             else:
@@ -142,8 +144,9 @@ class WhatModelCalculeProbabiliter(TypeProbabiliter):
                 self.nb_tirage_p = random.randint(1,ConstParamatreApplication.HASART_MAXIMUM)
                 
         else:
-            self.remise = False
-            self.ordre = False
+            self.bool_distingable= True
+            self.bool_remise = False
+            self.bool_ordre = False
             self.distingable = self.random_1_ou_2("t","p")
             if self.distingable =="t":
                 self.cardinale_n = random.randint(1,ConstParamatreApplication.HASART_MAXIMUM)
@@ -180,8 +183,8 @@ class UsingTerminal(WhatModelCalculeProbabiliter):
             if self.distingable :
                 print(f"_____pourquoi se choix ?______ \n les element sont distingable {self.distingable_mot_complet} les formule comprenne que la cardinaliter")
             else:
-                remise=  self.converte_True_False_to_str(self.remise,"oui","non")
-                ordre = self.converte_True_False_to_str(self.ordre,"oui","non")
+                remise=  self.converte_True_False_to_str(self.bool_remise,"oui","non")
+                ordre = self.converte_True_False_to_str(self.bool_ordre,"oui","non")
                 
                 print(f"_____pourquoi se choix ?_____ \n-les element ne sont pas ditingable la remise et importante \n-remise = {remise} \n-l'ordre = {ordre}")
         
@@ -201,32 +204,7 @@ class UsingStreamlit(WhatModelCalculeProbabiliter):
         self.write_raison_choix  = None
         self.PARTILEMENT = "Partiellement"
         self.TOTALEMENT = "Totalement"
-        self.init_anti_boucle()
         
-        
-    def init_convert_variable_to_streamlit_variable(self):
-        if st.session_state.boucle:
-            self.set_random_parametre()
-            print("je suis dans la matrice")
-            st.session_state.distingable  = self.distingable
-            st.session_state.remis  = self.remise
-            st.session_state.ordre  = self.ordre
-            st.session_state.model_selectionnner  = self.model_selectionnner
-            st.session_state.reponse =  self.resultat
-            st.session_state.nb_tirage = self.nb_tirage_p
-            st.session_state.caridnal_n = self.cardinale_n
-            if len(self.list_n_permutation_partiel) > 1:
-                st.session_state.list_n_permutation_partiel = self.list_n_permutation_partiel
-            else:  
-                st.session_state.list_n_permutation_partiel = None
-            st.session_state.boucle = False
-        pass
-    @staticmethod
-    def init_anti_boucle():
-        if "boucle" not in  st.session_state:
-             st.session_state.boucle = True
-            
-    
     def display_streamlit_resultat(self):
         with self.colonne_centralle:
                 texte = f"-le model choisi: {self.model_selectionnner}"
@@ -238,30 +216,31 @@ class UsingStreamlit(WhatModelCalculeProbabiliter):
     
     def display_streamlit_avertissement(self):
         with self.colonne_centralle:
-            if not self.remise and not self.distingable :
+            if not self.bool_remise and not self.bool_distingable :
                 st.write("<p style='color: red; font-weight: bold;'>nombre d'élement ne peut être supérieur au tirage !</p>", unsafe_allow_html=True)
     
     def display_streamlit_information(self):
         with self.colonne_gauche:
-            if st.session_state.distingable == False:
-                st.write(f"remise : {self.converte_True_False_to_str(st.session_state.remise,'oui','non')}")
-                st.write(f"ordre : {self.converte_True_False_to_str(st.session_state.ordre,'oui','non')}")
+            if self.distingable == False:
+                st.write(f"remise : {self.converte_True_False_to_str(self.bool_remise,'oui','non')}")
+                st.write(f"ordre : {self.converte_True_False_to_str(self.bool_ordre,'oui','non')}")
                 st.write(f"distingable : non")
                 st.write(f"nombre de tirage : {self.nb_tirage_p}")
                 st.write(f"taille de la liste : {self.cardinale_n}")
                 
-            if st.session_state.distingable != False:
+            if self.distingable != False:
                 st.write(f"remise : non")
                 st.write(f"ordre :  non")
-                st.write(f"distingable : {self.converte_True_False_to_str(st.session_state.distingable, si_vrais='t',si_faut='p',message_si_vrais= 'totalement',message_si_faut='partiellement')}")
-                if st.session_state.distingable =="t":
-                    st.write(f"taille du groupe : {st.session_state.caridnal_n}")
-                # elif self.distingable =="p":
-                #     st.write(f"taille total : {sum(self.list_n_permutation_partiel)}")
+                st.write(f"distingable : {self.converte_True_False_to_str(self.distingable, si_vrais='t',si_faut='p',message_si_vrais= 'totalement',message_si_faut='partiellement')}")
+                if self.distingable =="t":
+                    st.write(f"taille du groupe : {self.cardinale_n}")
+                elif self.distingable =="p":
+                    #  st.write(f"taille total : {sum(self.list_n_permutation_partiel)}")
+                    pass
                     
-            if st.session_state.distingable =="p":
-                # st.write(f"nombre de groupe distingable: {len(st.session_state.list_n_permutation_partiel)}")
-                # st.write(f"nombre de personne par groupe : {st.session_state.list_n_permutation_partiel}") 
+            if self.distingable =="p":
+                st.write(f"nombre de groupe distingable: {len(self.list_n_permutation_partiel)}")
+                st.write(f"nombre de personne par groupe : {self.list_n_permutation_partiel}") 
                 pass
       
     def what_streamlit_app_choice(self):
@@ -278,7 +257,7 @@ class UsingStreamlit(WhatModelCalculeProbabiliter):
                 
             elif selecte_option_choice ==ConstParamatreApplication.OPTION_CHOISI[2]:
                 self.app_Streamlit_entrainement()
-                self.display_calculator()
+                
     
     def display_calculator(self):
         self.calcule_resultat()
@@ -299,10 +278,10 @@ class UsingStreamlit(WhatModelCalculeProbabiliter):
          
     def app_streamlit_ordre_and_tirage(self):
         with self.colonne_gauche:
-            self.remise = st.checkbox("Remise")
-            self.ordre= st.checkbox("ordre")
+            self.bool_remise = st.checkbox("Remise")
+            self.bool_ordre= st.checkbox("ordre")
             self.cardinale_n = st.number_input("Nombre d'élement dans la liste (cardinale_n) :",step=1,min_value=1)
-            if not self.remise :
+            if not self.bool_remise :
                 self.nb_tirage_p = st.number_input("Nombre de tirage :",step=1,min_value=1,max_value=self.cardinale_n)
             else:
                 self.nb_tirage_p = st.number_input("Nombre de tirage :",step=1,min_value=1)
@@ -323,24 +302,20 @@ class UsingStreamlit(WhatModelCalculeProbabiliter):
         with self.colonne_centralle:
             st.write("Calculer le résultat :")
             self.set_random_parametre()
-            self.init_convert_variable_to_streamlit_variable()
+            self.calcule_resultat()
             self.display_streamlit_information()
             self.get_reponse_utilisateur_streamlit()
             
+            
     def get_reponse_utilisateur_streamlit(self):
         with self.colonne_centralle:
-                nombre = st.number_input("saisir le nombre de possibiliter",step=1,value=0)
-                if st.button("valider la réponse") :
-                    if self.bool_resultat_vs_utilisateur:
-                            st.write("reponse correcte")
-                            st.session_state.boucle = True 
-                                
-                            
-                    else:
-                            st.write("reponse incorrect")
-                            if st.button("afficher la réponse",key="choix"):
-                                self.display_streamlit_resultat()
-
+                st.button("générer")
+                with st.expander(f"afficher la réponse"):
+                    st.write(f"le model chois est : {self.model_selectionnner}")
+                    st.write(f"la réponse est : {self.resultat}")
+                    
+                    
+ 
     def run_streamlit(self):
         self.what_streamlit_app_choice()                    
                                 
